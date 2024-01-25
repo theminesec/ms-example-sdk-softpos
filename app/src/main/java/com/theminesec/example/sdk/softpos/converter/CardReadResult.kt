@@ -1,5 +1,8 @@
 package com.theminesec.example.sdk.softpos.converter
 
+import com.theminesec.MineHades.MhdReturnCode
+import com.theminesec.MineHades.vo.MhdEmvTransResult
+
 sealed class CardReadResult {
     abstract val respCode: String
     abstract val respMessage: String
@@ -31,34 +34,34 @@ enum class CvmPerformed {
     CDCVM
 }
 
-//@OptIn(ExperimentalStdlibApi::class)
-//fun MhdEmvTransResult.toCardReadResult(): CardReadResult {
-//    if (outComeCode == MhdReturnCode.MHD_SUCCESS.toString()) {
-//        return CardReadResult.Success(
-//            respCode = outComeCode,
-//            respMessage = outComeMessage,
-//            sdkTranId = sdkTxnId,
-//            paymentMethod = cardBrand,
-//            maskedPan = maskedPan,
-//            needOnline = isNeedOnline,
-//            cvmPerformed = when (cardCVM) {
-//                0 -> CvmPerformed.NO_CVM
-//                1 -> CvmPerformed.SIGNATURE
-//                2 -> CvmPerformed.PIN
-//                3 -> CvmPerformed.CDCVM
-//                else -> null
-//            },
-//            cardKsn = cardKeyId,
-//            pinKsn = pinKeyId,
-//            panToken = pinBlockPan,
-//            emvData = kernelInfoData.mapValues { (_, byteArray) ->
-//                byteArray.toHexString()
-//            }
-//        )
-//    } else {
-//        return CardReadResult.Failed(
-//            respCode = outComeCode,
-//            respMessage = outComeMessage
-//        )
-//    }
-//}
+@OptIn(ExperimentalStdlibApi::class)
+fun MhdEmvTransResult.toCardReadResult(): CardReadResult {
+    if (outComeCode == MhdReturnCode.MHD_SUCCESS.toString()) {
+        return CardReadResult.Success(
+            respCode = outComeCode,
+            respMessage = outComeMessage,
+            sdkTranId = sdkTxnId,
+            paymentMethod = cardBrand,
+            maskedPan = maskedPan,
+            needOnline = isNeedOnline,
+            cvmPerformed = when (cardCVM) {
+                0 -> CvmPerformed.NO_CVM
+                1 -> CvmPerformed.SIGNATURE
+                2 -> CvmPerformed.PIN
+                3 -> CvmPerformed.CDCVM
+                else -> null
+            },
+            cardKsn = cardKeyId,
+            pinKsn = pinKeyId,
+            panToken = pinBlockPan,
+            emvData = kernelInfoData.mapValues { (_, byteArray) ->
+                byteArray.toHexString()
+            }
+        )
+    } else {
+        return CardReadResult.Failed(
+            respCode = outComeCode,
+            respMessage = outComeMessage
+        )
+    }
+}

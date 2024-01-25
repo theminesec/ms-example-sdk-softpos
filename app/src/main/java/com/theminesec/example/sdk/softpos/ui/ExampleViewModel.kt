@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.GsonBuilder
 import com.theminesec.MineHades.*
+import com.theminesec.MineHades.KMS.DukptKeyGenParameter
 import com.theminesec.MineHades.KMS.KeyLoader
 import com.theminesec.MineHades.KMS.MsKeyProperties
 import com.theminesec.MineHades.KMS.MsWrappedSecretKeyEntry
@@ -254,6 +255,26 @@ class ExampleViewModel(private val app: Application) : AndroidViewModel(app) {
     val encryptedPinData = _encryptedPinData.asStateFlow()
     fun setEncryptedPinData(result: Triple<Ksn, EncryptedPinBlock, PanToken?>?) = viewModelScope.launch {
         _encryptedPinData.emit(result)
+    }
+
+    fun deriveWorkingKeysBeforeTran() {
+        writeMessage("since we've injected our own IK for card & PIN, before transaction we'll need to tell SDK to derive working key (for the correct KSN)")
+
+        val keyGenCardWk = DukptKeyGenParameter.Builder(ClientKeyType.CARD_KEY.msKeyProp, ClientKeyType.CARD_KEY.keyAlias)
+            .setKeyUsage(MsKeyProperties.KEY_USAGE_DATA_ENC_BOTH)
+            .setIsCounterUpdate(true)
+            .setKeyType(MsKeyProperties.KEY_TYPE_AES_AES128)
+            .build()
+        val cardWkRes = sdk.MhdSdk_GetKeyStore().DeriveKey(keyGenCardWk)
+        writeMessage("next card ksn: ${cardWkRes.data.ksn}")
+
+        val keyGenPinWk = DukptKeyGenParameter.Builder(ClientKeyType.PIN_KEY.msKeyProp, ClientKeyType.PIN_KEY.keyAlias)
+            .setKeyUsage(MsKeyProperties.KEY_USAGE_PIN_ENCRYPTION)
+            .setIsCounterUpdate(true)
+            .setKeyType(MsKeyProperties.KEY_TYPE_AES_AES128)
+            .build()
+        val pinWkRes = sdk.MhdSdk_GetKeyStore().DeriveKey(keyGenPinWk)
+        writeMessage("next pin ksn: ${pinWkRes.data.ksn}")
     }
 
     // DEMO PURPOSE ONLY

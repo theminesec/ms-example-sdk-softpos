@@ -24,12 +24,17 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import com.google.gson.GsonBuilder
 import com.theminesec.MineHades.MhdCPOC
+import com.theminesec.MineHades.vo.MhdEmvTransactionDto
+import com.theminesec.MineHades.vo.MhdEmvTransactionType
+import com.theminesec.example.sdk.softpos.converter.CardReadResult
+import com.theminesec.example.sdk.softpos.converter.toCardReadResult
 import com.theminesec.example.sdk.softpos.ui.component.BrandedButton
 import com.theminesec.example.sdk.softpos.ui.component.LabeledSwitch
 import com.theminesec.example.sdk.softpos.ui.component.Title
 import com.theminesec.example.sdk.softpos.util.findActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlin.concurrent.thread
 
 @Composable
 fun ExampleSection() {
@@ -153,6 +158,61 @@ fun ExampleSection() {
                 lifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
                     val nfcEnableResult = sdk.MhdNfc_Enablev2(localContext.findActivity())
                     viewModel.writeMessage("NFC enable? ${nfcEnableResult.errorMsg}")
+                }
+
+                // callback for card read data
+                sdk.setOnEmvHandler {
+                    viewModel.writeMessage("onEmvHandler")
+                    thread {
+
+                        // since we've injected our own IK for card & PIN,
+                        // before transaction we'll need to tell SDK to derive working key (for the correct KSN)
+                        viewModel.deriveWorkingKeysBeforeTran()
+
+                        val txnRequest = MhdEmvTransactionDto
+                            .builder()
+                            .txnAmount(if (uiAmountLarge) 20000 else 200)
+                            .txnType(MhdEmvTransactionType.MHD_EMV_TRANS_PURCHASE)
+                            // auto prompt PIN pad when PIN CVM is applicable
+                            // default on
+                            //.autoPinEntry(true)
+
+                            // since we'll using own IK and call derive manually
+                            // turn off the `deriveKeysFromIK` to avoid sdk default IK derivation
+                            .deriveKeysFromIK(false)
+
+                            // will handle the EPB by the real PAN
+                            .enablePANToken(false)
+                            .build()
+
+                        val mineHadesResult = sdk.payInterface.EmvPerformTransaction(localContext, txnRequest)
+                        val cardReadResult = mineHadesResult.toCardReadResult()
+                        if (cardReadResult is CardReadResult.Success) {
+                            viewModel.writeMessage("cardReadResult: \n${prettyGson.toJson(cardReadResult)}")
+
+                            // holding encrypted card data in viewmodel for later demo decrypt
+                            cardReadResult.emvData["57"]?.let {
+                                val cardKsn = Ksn(cardReadResult.cardKsn)
+                                val iv = Iv(it.substring(0, 32))
+                                val encrypted57 = Encrypted57(it.substring(32))
+                                viewModel.setCardReadResult(Triple(cardKsn, iv, encrypted57))
+                                viewModel.writeMessage("required for decryption (in backend): $cardKsn, $iv, $encrypted57")
+                            }
+
+                            // holding encrypted pin data in viewmodel for later demo decrypt
+                            cardReadResult.emvData["99"]?.let {
+                                val pinKsn = Ksn(cardReadResult.pinKsn!!)
+                                val epbHex = EncryptedPinBlock(it)
+                                viewModel.setEncryptedPinData(Triple(pinKsn, epbHex, null))
+                                viewModel.writeMessage("required for translate: $pinKsn, $epbHex")
+                            } ?: run {
+                                viewModel.setEncryptedPinData(null)
+                            }
+                        } else {
+                            viewModel.writeMessage("cardReadResult failed: \n${prettyGson.toJson(cardReadResult)}")
+                            viewModel.setCardReadResult(null)
+                        }
+                    }
                 }
             } else {
                 sdk.MhdNfc_DisableReader()
