@@ -10,9 +10,7 @@ import com.theminesec.MineHades.KMS.KeyLoader
 import com.theminesec.MineHades.KMS.MsKeyProperties
 import com.theminesec.MineHades.KMS.MsWrappedSecretKeyEntry
 import com.theminesec.example.sdk.softpos.converter.*
-import com.theminesec.example.sdk.softpos.util.crypto.DukptAesHost
-import com.theminesec.example.sdk.softpos.util.crypto.KeyType
-import com.theminesec.example.sdk.softpos.util.crypto.RSAUtils
+import com.theminesec.example.sdk.softpos.util.crypto.*
 import com.theminesec.example.sdk.softpos.util.isAllZero
 import com.theminesec.example.sdk.softpos.util.loadJsonFromAsset
 import com.theminesec.example.sdk.softpos.util.sequentialString
@@ -282,11 +280,61 @@ class ExampleViewModel(private val app: Application) : AndroidViewModel(app) {
     // https://docs.minesec.tools/tech-sdk/getting-started/quickstart#decrypt-data
     fun dangerouslyDecryptCardDataLocally() {
         writeMessage("card read result: ${cardReadResult.value.toString()}")
-        TODO()
+        cardReadResult.value?.let { (ksn, iv, encrypted) ->
+            // get working key by ksn and bdk
+            val dangerouslyDemoWorkingCardKey = DukptAesHost.deriveWorkingKeyByBdk(
+                bdk = dangerouslyLocalCardBdk.hexToByteArray(),
+                bdkKeyType = KeyType.AES128,
+                workingKeyType = KeyType.AES128,
+                workingKeyUsage = KeyUsage.DataEncryptionBothWays,
+                ksn = ksn.value
+            )
+            try {
+                val plainTrack2 = Aes.decrypt(
+                    encrypted.value.hexToByteArray(),
+                    dangerouslyDemoWorkingCardKey,
+                    Aes.Padding.PKCS5Padding,
+                    iv.value.hexToByteArray()
+                )
+                val plainPan = plainTrack2.toHexString().lowercase().substringBefore("d")
+                writeMessage("decrypted track 2: ${plainTrack2.toHexString()}")
+                writeMessage("decrypted PAN: $plainPan")
+
+                // set PanToken for the EPB translate
+                viewModelScope.launch {
+                    _encryptedPinData.emit(_encryptedPinData.value?.copy(third = PanToken(plainPan)))
+                }
+            } catch (e: Exception) {
+                writeMessage("err: $e")
+            }
+        }
     }
 
     fun dangerouslyDecryptPinDataLocally() {
         writeMessage("epb: ${encryptedPinData.value.toString()}")
-        TODO()
+        encryptedPinData.value?.let { (ksn, epb, panToken) ->
+            // get working key by ksn and bdk
+            val dangerouslyDemoWorkingPinKey = DukptAesHost.deriveWorkingKeyByBdk(
+                bdk = dangerouslyLocalPinBdk.hexToByteArray(),
+                bdkKeyType = KeyType.AES128,
+                workingKeyType = KeyType.AES128,
+                workingKeyUsage = KeyUsage.PinEncryption,
+                ksn = ksn.value
+            )
+
+            try {
+                writeMessage("$ksn, $epb, $panToken")
+                panToken?.let {
+                    val plainPin = PinBlock.dangerouslyDecryptIso4EpbToPin(
+                        dangerouslyDemoWorkingPinKey,
+                        epb.value.hexToByteArray(),
+                        encryptedPinData.value?.third?.value!!
+                    )
+                    writeMessage("decrypted PIN: $plainPin")
+                } ?: writeMessage("no pan token, please decrypt first")
+            } catch (e: Exception) {
+                writeMessage("err: $e")
+            }
+        }
     }
 }
