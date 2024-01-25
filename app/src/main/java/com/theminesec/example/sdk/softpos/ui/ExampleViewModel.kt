@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.GsonBuilder
+import com.theminesec.MineHades.MhdCPOC
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -43,13 +44,23 @@ class ExampleViewModel(private val app: Application) : AndroidViewModel(app) {
 
     // Init SDK
     // https://docs.minesec.tools/tech-sdk/getting-started/quickstart#init-sdk
+    private val sdk = MhdCPOC.getInstance(app)
+
+    init {
+        initSdk()
+    }
+
     private fun initSdk() = viewModelScope.launch(Dispatchers.IO) {
         writeMessage("Start init SDK")
-        TODO()
+        val yourDeviceId = "client-example-123"
+        val licenseFileName = "example.license"
+        val initResult = sdk.MhdCPOC_Init2(app, licenseFileName, yourDeviceId)
+        writeMessage("init result: \n${prettyGson.toJson(initResult)}")
     }
 
     fun getSdkInfo() {
-        TODO()
+        writeMessage("SDK version: ${sdk.mineHadesVersion}")
+        writeMessage("SDK ID (By MineSec): ${sdk.mineHadesIdentifier}")
     }
 
     // EMV Apps
