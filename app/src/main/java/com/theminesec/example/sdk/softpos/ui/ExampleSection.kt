@@ -16,15 +16,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import com.google.gson.GsonBuilder
+import com.theminesec.MineHades.MhdCPOC
 import com.theminesec.example.sdk.softpos.ui.component.BrandedButton
 import com.theminesec.example.sdk.softpos.ui.component.LabeledSwitch
 import com.theminesec.example.sdk.softpos.ui.component.Title
+import com.theminesec.example.sdk.softpos.util.findActivity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun ExampleSection() {
@@ -40,6 +45,9 @@ fun ExampleSection() {
     var uiAmountLarge by remember { mutableStateOf(false) }
     val uiLastCardRead by viewModel.cardReadResult.collectAsState()
     val uiPinData by viewModel.encryptedPinData.collectAsState()
+
+    // hold reference of sdk singleton
+    val sdk = remember { MhdCPOC.getInstance(localContext) }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -132,16 +140,24 @@ fun ExampleSection() {
                 checked = uiReaderEnabled,
                 onCheckedChange = { uiReaderEnabled = it }
             )
+
+            LabeledSwitch(
+                label = "Toggle Amount (with PIN CVM)",
+                checked = uiAmountLarge,
+                onCheckedChange = { uiAmountLarge = it }
+            )
         }
 
-        LabeledSwitch(
-            label = "Toggle Amount (with PIN CVM)",
-            checked = uiAmountLarge,
-            onCheckedChange = { uiAmountLarge = it }
-        )
-
         LaunchedEffect(uiReaderEnabled) {
-            // TODO
+            if (uiReaderEnabled) {
+                lifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
+                    val nfcEnableResult = sdk.MhdNfc_Enablev2(localContext.findActivity())
+                    viewModel.writeMessage("NFC enable? ${nfcEnableResult.errorMsg}")
+                }
+            } else {
+                sdk.MhdNfc_DisableReader()
+                viewModel.writeMessage("NFC disabled")
+            }
         }
 
         Divider()
