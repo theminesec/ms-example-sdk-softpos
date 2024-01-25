@@ -4,12 +4,11 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.GsonBuilder
+import com.theminesec.MineHades.EMVCAPK
 import com.theminesec.MineHades.EMV_APPLIST
 import com.theminesec.MineHades.MhdCPOC
 import com.theminesec.MineHades.MhdReturnCode
-import com.theminesec.example.sdk.softpos.converter.EmvApp
-import com.theminesec.example.sdk.softpos.converter.toEmvApp
-import com.theminesec.example.sdk.softpos.converter.toMhdEmvApp
+import com.theminesec.example.sdk.softpos.converter.*
 import com.theminesec.example.sdk.softpos.util.isAllZero
 import com.theminesec.example.sdk.softpos.util.loadJsonFromAsset
 import kotlinx.coroutines.Dispatchers
@@ -97,12 +96,25 @@ class ExampleViewModel(private val app: Application) : AndroidViewModel(app) {
     // https://docs.minesec.tools/tech-sdk/getting-started/quickstart#capk-param
     fun setCapks() = viewModelScope.launch(Dispatchers.Default) {
         writeMessage("setCapks")
-        TODO()
+        val capks: List<Capk> = app.loadJsonFromAsset("capk.json")
+
+        capks.filter { it.keyType == CapkKeyType.TEST }
+            .forEach { capk ->
+                val result = sdk.MhdEmv_AddCapk(capk.toMhdCapk())
+                writeMessage("CAPK RID ${capk.rid}\nsuccess?: ${result == MhdReturnCode.MHD_SUCCESS}")
+            }
     }
 
+    private val maxCapkSlots = 64
     fun getCapks() {
         writeMessage("getCapks")
-        TODO()
+        for (i in 0 until maxCapkSlots) {
+            val msCapkDump = EMVCAPK()
+            sdk.MhdEmv_GetCapk(i, msCapkDump)
+            if (msCapkDump.rid.isAllZero()) break
+
+            writeMessage("Capk $i, RID: ${msCapkDump.toCapk().rid}, key index: ${msCapkDump.toCapk().keyIndex}\n${msCapkDump.toCapk()}")
+        }
     }
 
     // Terminal Param
