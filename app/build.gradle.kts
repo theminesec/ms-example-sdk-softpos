@@ -83,7 +83,7 @@ dependencies {
     // gson for demo
     implementation("com.google.code.gson:gson:2.10.1")
 
-    implementation("com.theminesec.sdk:minehades-stage:1.10.105.12-rc-7") {
+    implementation("com.theminesec.sdk:minehades-stage:1.10.105.12-rc-8") {
         exclude(group = "org.bouncycastle", module = "bcprov-jdk15on")
         exclude(group = "org.bouncycastle", module = "bcpkix-jdk15on")
     }
