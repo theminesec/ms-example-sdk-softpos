@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage", "LocalVariableName")
+
 pluginManagement {
     repositories {
         google()
@@ -13,5 +15,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ms-example.sdk.softpos"
+rootProject.name = "MineSec Example - SDK SoftPOS"
 include(":app")
