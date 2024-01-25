@@ -4,10 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.GsonBuilder
-import com.theminesec.MineHades.EMVCAPK
-import com.theminesec.MineHades.EMV_APPLIST
-import com.theminesec.MineHades.MhdCPOC
-import com.theminesec.MineHades.MhdReturnCode
+import com.theminesec.MineHades.*
 import com.theminesec.example.sdk.softpos.converter.*
 import com.theminesec.example.sdk.softpos.util.isAllZero
 import com.theminesec.example.sdk.softpos.util.loadJsonFromAsset
@@ -121,12 +118,24 @@ class ExampleViewModel(private val app: Application) : AndroidViewModel(app) {
     // https://docs.minesec.tools/tech-sdk/getting-started/quickstart#terminal-device-param
     fun setTermParam() = viewModelScope.launch(Dispatchers.Default) {
         writeMessage("setTermParam")
-        TODO()
+
+        // termCap: 0060c8
+        // × plaintext offline pin
+        // ✓ enciphered online pin
+        // ✓ signature
+        // × enciphered offline pin
+        // × no cvm
+        val termParams: TerminalParam = app.loadJsonFromAsset("term.json")
+        val result = sdk.MhdEmv_SetParam(termParams.toMhdTermParams(), app)
+        writeMessage("TermParams success?: ${result == MhdReturnCode.MHD_SUCCESS}")
     }
 
     fun getTermParam() = viewModelScope.launch {
         writeMessage("getTermParam")
-        TODO()
+
+        val dump = EMV_PARAM()
+        sdk.MhdEmv_GetParam(dump)
+        writeMessage("getTermParam: ${dump.toTermParams()}")
     }
 
     // Key ceremony
