@@ -4,7 +4,14 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.GsonBuilder
+import com.theminesec.MineHades.EMV_APPLIST
 import com.theminesec.MineHades.MhdCPOC
+import com.theminesec.MineHades.MhdReturnCode
+import com.theminesec.example.sdk.softpos.converter.EmvApp
+import com.theminesec.example.sdk.softpos.converter.toEmvApp
+import com.theminesec.example.sdk.softpos.converter.toMhdEmvApp
+import com.theminesec.example.sdk.softpos.util.isAllZero
+import com.theminesec.example.sdk.softpos.util.loadJsonFromAsset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -67,12 +74,23 @@ class ExampleViewModel(private val app: Application) : AndroidViewModel(app) {
     // https://docs.minesec.tools/tech-sdk/getting-started/quickstart#emv-kernel-app-param
     fun setEmvApps() = viewModelScope.launch(Dispatchers.Default) {
         writeMessage("setEmvApps")
-        TODO()
+        val emvApps: List<EmvApp> = app.loadJsonFromAsset("emv-app.json")
+        emvApps.forEach { emvApp ->
+            val result = sdk.MhdEmv_AddApp(emvApp.toMhdEmvApp())
+            writeMessage("EMV AID ${emvApp.aid}\nsuccess?: ${result == MhdReturnCode.MHD_SUCCESS}")
+        }
     }
 
+    private val maxEmvAppSlots = 32
     fun getEmvApps() = viewModelScope.launch {
         writeMessage("getEmvApps")
-        TODO()
+        for (i in 0 until maxEmvAppSlots) {
+            val emvAppDump = EMV_APPLIST()
+            sdk.MhdEmv_GetApp(i, emvAppDump)
+            if (emvAppDump.aid.isAllZero()) break
+
+            writeMessage("EmvApp $i, AID: ${emvAppDump.toEmvApp().aid}\n${emvAppDump.toEmvApp()}")
+        }
     }
 
     // CAPKs

@@ -1,5 +1,9 @@
 package com.theminesec.example.sdk.softpos.converter
 
+import com.theminesec.MineHades.EMV_APPLIST
+import com.theminesec.example.sdk.softpos.util.prependLengthByte
+import com.theminesec.example.sdk.softpos.util.trimLengthByte
+
 data class EmvApp(
     /**
      * 9F06 - AID
@@ -96,71 +100,71 @@ data class EmvApp(
     val enabledCtlStatusCheck: Boolean?,
 )
 
-//@OptIn(ExperimentalStdlibApi::class)
-//fun EmvApp.toMhdEmvApp() = EMV_APPLIST().apply {
-//    aid = this@toMhdEmvApp.aid.hexToByteArray()
-//    aidLen = this@toMhdEmvApp.aid.hexToByteArray().size.toByte()
-//    version = this@toMhdEmvApp.appVersion.hexToByteArray()
-//
-//    acquierId = "00".hexToByteArray()
-//    setdDOL(defaultDdol.hexToByteArray().prependLengthByte())
-//    settDOL(defaultTdol.hexToByteArray().prependLengthByte())
-//    tacDenial = this@toMhdEmvApp.tacDenial.hexToByteArray()
-//    tacDefault = this@toMhdEmvApp.tacDefault.hexToByteArray()
-//    tacOnline = this@toMhdEmvApp.tacOnline.hexToByteArray()
-//
-//    selFlag = if (isFullMatchSelect) 1 else 0
-//    priority = selectionPriority.toByte()
-//
-//    randTransSel = if (enabledRandomSelect) 1 else 0
-//    targetPer = randomSelectTargetPercent.toByte()
-//    maxTargetPer = randomSelectMaxTargetPercent.toByte()
-//    threshold = this@toMhdEmvApp.randomSelectThreshold.toLong()
-//
-//    velocityCheck = if (enabledVelocityCheck) 1 else 0
-//
-//    floorLimitCheck = if (enabledFloorLimitCheck) 1 else 0
-//    floorLimit = ctlFloorLimit.toLong()
-//    cL_bStatusCheck = if (enabledCtlStatusCheck == true) 1 else 0
-//    cL_FloorLimit = ctlFloorLimit.toLong()
-//    cL_TransLimit = ctlTranLimit.toLong()
-//    cL_CVMLimit = ctlCvmRequiredLimit.toLong()
-//
-//    mcKernelConfig?.let { kernelConfig = it.hexToByte() }
-//    riskMgmtData?.let { riskManData = it.hexToByteArray().prependLengthByte() }
-//    ttq?.let { t_TTQ = it.hexToByteArray() }
-//}
-//
-//@OptIn(ExperimentalStdlibApi::class)
-//fun EMV_APPLIST.toEmvApp() = EmvApp(
-//    aid = aid.toHexString(),
-//    appVersion = version.toHexString(),
-//
-//    defaultDdol = getdDOL().trimLengthByte().toHexString(),
-//    defaultTdol = gettDOL().trimLengthByte().toHexString(),
-//    tacDenial = tacDenial.toHexString(),
-//    tacOnline = tacOnline.toHexString(),
-//    tacDefault = tacDefault.toHexString(),
-//
-//    isFullMatchSelect = selFlag == 1.toByte(),
-//    selectionPriority = priority.toInt(),
-//
-//    enabledRandomSelect = randTransSel == 1.toByte(),
-//    randomSelectTargetPercent = targetPer.toInt(),
-//    randomSelectMaxTargetPercent = maxTargetPer.toInt(),
-//    randomSelectThreshold = threshold.toString(),
-//
-//    enabledVelocityCheck = velocityCheck == 1.toByte(),
-//
-//    enabledFloorLimitCheck = floorLimitCheck == 1.toByte(),
-//    ctlFloorLimit = cL_FloorLimit.toString(),
-//    enabledCtlStatusCheck = cL_bStatusCheck == 1.toByte(),
-//    ctlTranLimit = cL_TransLimit.toString(),
-//    ctlCvmRequiredLimit = cL_CVMLimit.toString(),
-//
-//    riskMgmtData = riskManData.trimLengthByte().toHexString(),
-//    ttq = t_TTQ.toHexString(),
-//
-//    mcKernelConfig = kernelConfig.toHexString()
-//
-//)
+@OptIn(ExperimentalStdlibApi::class)
+fun EmvApp.toMhdEmvApp() = EMV_APPLIST().apply {
+    aid = this@toMhdEmvApp.aid.hexToByteArray()
+    aidLen = this@toMhdEmvApp.aid.hexToByteArray().size.toByte()
+    version = this@toMhdEmvApp.appVersion.hexToByteArray()
+
+    acquierId = "00".hexToByteArray()
+    setdDOL(defaultDdol.hexToByteArray().prependLengthByte())
+    settDOL(defaultTdol.hexToByteArray().prependLengthByte())
+    tacDenial = this@toMhdEmvApp.tacDenial.hexToByteArray()
+    tacDefault = this@toMhdEmvApp.tacDefault.hexToByteArray()
+    tacOnline = this@toMhdEmvApp.tacOnline.hexToByteArray()
+
+    selFlag = if (isFullMatchSelect) 1 else 0
+    priority = selectionPriority.toByte()
+
+    randTransSel = if (enabledRandomSelect) 1 else 0
+    targetPer = randomSelectTargetPercent.toByte()
+    maxTargetPer = randomSelectMaxTargetPercent.toByte()
+    threshold = this@toMhdEmvApp.randomSelectThreshold.toLong()
+
+    velocityCheck = if (enabledVelocityCheck) 1 else 0
+
+    floorLimitCheck = if (enabledFloorLimitCheck) 1 else 0
+    floorLimit = ctlFloorLimit.toLong()
+    cL_bStatusCheck = if (enabledCtlStatusCheck == true) 1 else 0
+    cL_FloorLimit = ctlFloorLimit.toLong()
+    cL_TransLimit = ctlTranLimit.toLong()
+    cL_CVMLimit = ctlCvmRequiredLimit.toLong()
+
+    mcKernelConfig?.let { kernelConfig = it.hexToByte() }
+    riskMgmtData?.let { riskManData = it.hexToByteArray().prependLengthByte() }
+    ttq?.let { t_TTQ = it.hexToByteArray() }
+}
+
+@OptIn(ExperimentalStdlibApi::class)
+fun EMV_APPLIST.toEmvApp() = EmvApp(
+    aid = aid.toHexString(),
+    appVersion = version.toHexString(),
+
+    defaultDdol = getdDOL().trimLengthByte().toHexString(),
+    defaultTdol = gettDOL().trimLengthByte().toHexString(),
+    tacDenial = tacDenial.toHexString(),
+    tacOnline = tacOnline.toHexString(),
+    tacDefault = tacDefault.toHexString(),
+
+    isFullMatchSelect = selFlag == 1.toByte(),
+    selectionPriority = priority.toInt(),
+
+    enabledRandomSelect = randTransSel == 1.toByte(),
+    randomSelectTargetPercent = targetPer.toInt(),
+    randomSelectMaxTargetPercent = maxTargetPer.toInt(),
+    randomSelectThreshold = threshold.toString(),
+
+    enabledVelocityCheck = velocityCheck == 1.toByte(),
+
+    enabledFloorLimitCheck = floorLimitCheck == 1.toByte(),
+    ctlFloorLimit = cL_FloorLimit.toString(),
+    enabledCtlStatusCheck = cL_bStatusCheck == 1.toByte(),
+    ctlTranLimit = cL_TransLimit.toString(),
+    ctlCvmRequiredLimit = cL_CVMLimit.toString(),
+
+    riskMgmtData = riskManData.trimLengthByte().toHexString(),
+    ttq = t_TTQ.toHexString(),
+
+    mcKernelConfig = kernelConfig.toHexString()
+
+)
