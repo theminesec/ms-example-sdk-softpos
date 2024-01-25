@@ -5,14 +5,22 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.GsonBuilder
 import com.theminesec.MineHades.*
+import com.theminesec.MineHades.KMS.KeyLoader
+import com.theminesec.MineHades.KMS.MsKeyProperties
+import com.theminesec.MineHades.KMS.MsWrappedSecretKeyEntry
 import com.theminesec.example.sdk.softpos.converter.*
+import com.theminesec.example.sdk.softpos.util.crypto.DukptAesHost
+import com.theminesec.example.sdk.softpos.util.crypto.KeyType
+import com.theminesec.example.sdk.softpos.util.crypto.RSAUtils
 import com.theminesec.example.sdk.softpos.util.isAllZero
 import com.theminesec.example.sdk.softpos.util.loadJsonFromAsset
+import com.theminesec.example.sdk.softpos.util.sequentialString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.crypto.Cipher
 
 @JvmInline
 value class Iv(val value: String)
@@ -140,12 +148,98 @@ class ExampleViewModel(private val app: Application) : AndroidViewModel(app) {
 
     // Key ceremony
     // https://docs.minesec.tools/tech-sdk/getting-started/quickstart#key-ceremony
+    // !!!!!!! DEMO ONLY !!!!!!!
+    // AES 128 BDK
+    // DO NOT do it in any production environment
+    // always use HSM or equivalent secure module
+    private val dangerouslyLocalCardBdk = "f1".repeat(16)
+    private val dangerouslyLocalPinBdk = "f2".repeat(16)
+
+    enum class WrappingMethod(val minesecInt: Int) {
+        RSA(MsKeyProperties.WRAPPING_METHOD_RSA),
+        RSA_OAEP_SHA256(MsKeyProperties.WRAPPING_METHOD_RSA_OAEP_SHA256)
+    }
+
+    enum class ClientKeyType(val keyAlias: String, val msKeyProp: String) {
+        CARD_KEY("client_card_key", MsKeyProperties.MINESEC_CARD_KEY_NAME),
+        PIN_KEY("client_pin_key", MsKeyProperties.MINESEC_PIN_KEY_NAME),
+    }
+
+    // Simulate initial key wrapping
+    // !!!!!!! DEMO ONLY !!!!!!!
+    // DO NOT do it in any production environment
+    private fun dangerouslyLocalWrapIkWithMineSecPublic(
+        bdk: ByteArray,
+        keyAlias: String,
+        wrappingMethod: WrappingMethod = WrappingMethod.RSA_OAEP_SHA256,
+    ): MsWrappedSecretKeyEntry? {
+        val mineSecPubName = "minesecpk"
+
+        val dangerouslyLocalIkId = 16.sequentialString()
+        val dangerouslyLocalIk = DukptAesHost.deriveInitialKeyByBdk(
+            bdk,
+            KeyType.AES128,
+            dangerouslyLocalIkId
+        )
+
+        // support 3 modes;
+        // - Simple RSA
+        // - RSA OAEP
+        // - TR31, check doc for more details
+        val publicStr = KeyLoader.ReadKeyfromKeyStore(mineSecPubName).wrappedKey.decodeToString()
+        val kekPublic = RSAUtils.getPublicKeyFromPEM(publicStr)
+
+        val dangerouslyLocalWrapEntry = when (wrappingMethod) {
+            WrappingMethod.RSA -> RSAUtils.simpleCrypt(
+                mode = Cipher.ENCRYPT_MODE,
+                key = kekPublic,
+                data = dangerouslyLocalIk
+            )
+
+            WrappingMethod.RSA_OAEP_SHA256 -> RSAUtils.oaepMgf1Sha256Crypt(
+                mode = Cipher.ENCRYPT_MODE,
+                key = kekPublic,
+                data = dangerouslyLocalIk
+            )
+        }
+
+        return MsWrappedSecretKeyEntry.Builder(
+            keyAlias,
+            dangerouslyLocalWrapEntry,
+            MsKeyProperties.KEY_TYPE_AES_AES128
+        )
+            .setKeyId(dangerouslyLocalIkId)
+            .setWrappingKeyAlias(MsKeyProperties.MINESEC_KEK_NAME)
+            .setWrappingMethod(wrappingMethod.minesecInt)
+            .setKeyUsage(MsKeyProperties.KEY_USAGE_DUKPT_INITIAL_KEY)
+            .build()
+    }
+
+    /**
+     * MineHades full SDK supports you to load a DUKPT Initial Key(AES-128) in the app initialization stage.
+     * Once the IK is injected into SDK. you can derive working ket during each transaction.
+     * DUKPT Initial Key shall be encrypted using the minesec public key in **server side**,
+     * and download it into SDK via key loading interface.
+     */
     fun injectCardInitialKey() = viewModelScope.launch(Dispatchers.Default) {
-        TODO()
+        // should be getting from your backend
+        val wrappedKeyEntryCard = dangerouslyLocalWrapIkWithMineSecPublic(
+            dangerouslyLocalCardBdk.hexToByteArray(),
+            ClientKeyType.CARD_KEY.keyAlias,
+            WrappingMethod.RSA
+        )
+        val injectResp = sdk.payInterface.CryptoInjectKey(wrappedKeyEntryCard)
+        writeMessage("Card key injectResp, code: ${injectResp.errorcode}, msg: ${injectResp.errorMsg}")
     }
 
     fun injectPinInitialKey() = viewModelScope.launch(Dispatchers.Default) {
-        TODO()
+        // should be getting from your backend
+        val wrappedKeyEntryPin = dangerouslyLocalWrapIkWithMineSecPublic(
+            dangerouslyLocalPinBdk.hexToByteArray(),
+            ClientKeyType.PIN_KEY.keyAlias,
+        )
+        val injectResp = sdk.payInterface.CryptoInjectKey(wrappedKeyEntryPin)
+        writeMessage("PIN key injectResp, code: ${injectResp.errorcode}, msg: ${injectResp.errorMsg}")
     }
 
     // Card Read & PIN
