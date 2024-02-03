@@ -12,7 +12,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        mavenLocal()
+        // mavenLocal()
 
         // if you need to support Huawei devices
         maven {
