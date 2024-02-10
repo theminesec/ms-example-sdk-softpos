@@ -22,6 +22,11 @@ android {
 
     buildTypes {
         release {
+            isMinifyEnabled = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("debug")
+        }
+        debug {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
@@ -83,12 +88,20 @@ dependencies {
     // gson for demo
     implementation("com.google.code.gson:gson:2.10.1")
 
-    debugImplementation("com.theminesec.sdk:minehades-stage:1.10.105.12-rc-9") {
+    debugImplementation("com.theminesec.sdk:minehades-stage:1.10.105.12-rc-10") {
         exclude(group = "org.bouncycastle", module = "bcprov-jdk15on")
         exclude(group = "org.bouncycastle", module = "bcpkix-jdk15on")
     }
-    releaseImplementation("com.theminesec.sdk:minehades:1.10.105.12-rc-9") {
+    releaseImplementation("com.theminesec.sdk:minehades:1.10.105.12-rc-10") {
         exclude(group = "org.bouncycastle", module = "bcprov-jdk15on")
         exclude(group = "org.bouncycastle", module = "bcpkix-jdk15on")
     }
+
+    // if you need to support Huawei HarmonyOS
+    // remember to enable repository in dependencyResolutionManagement in `settings.gradle.kts`
+    // implementation("com.huawei.agconnect:agconnect-core:1.7.3.302")
+    // implementation("com.huawei.hms:safetydetect:6.7.0.301") {
+    //     exclude(group = "org.bouncycastle", module = "bcprov-jdk15on")
+    //     exclude(group = "org.bouncycastle", module = "bcpkix-jdk15on")
+    // }
 }

@@ -12,12 +12,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        // mavenLocal()
-
-        // if you need to support Huawei devices
-        maven {
-            url = uri("https://developer.huawei.com/repo/")
-        }
+        mavenLocal()
+        // if you need to support Huawei OS
+        // maven { url = uri("https://developer.huawei.com/repo/") }
 
         // MineSec's maven registry
         maven {

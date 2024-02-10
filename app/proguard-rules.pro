@@ -19,3 +19,12 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-dontwarn com.americanexpress.mobilepayments.**
+-dontwarn com.theminesec.minehadescore.**
+-dontwarn com.huawei.hmf.**
+-dontwarn com.huawei.hms.**
+-dontwarn java.beans.**
+-dontwarn javax.mail.**
+-dontwarn javax.naming.**
+-dontwarn org.ietf.jgss.**
