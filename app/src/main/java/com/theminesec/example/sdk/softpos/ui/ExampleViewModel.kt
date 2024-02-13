@@ -53,7 +53,7 @@ class ExampleViewModel(private val app: Application) : AndroidViewModel(app) {
     fun clearLog() = viewModelScope.launch { _messages.emit(emptyList()) }
 
     // Init SDK
-    // https://docs.minesec.tools/tech-sdk/getting-started/quickstart#init-sdk
+    // https://docs.theminesec.com/tech-sdk/getting-started/quickstart#init-sdk
     private val sdk = MhdCPOC.getInstance(app)
 
     init {
@@ -74,7 +74,7 @@ class ExampleViewModel(private val app: Application) : AndroidViewModel(app) {
     }
 
     // EMV Apps
-    // https://docs.minesec.tools/tech-sdk/getting-started/quickstart#emv-kernel-app-param
+    // https://docs.theminesec.com/tech-sdk/getting-started/quickstart#emv-kernel-app-param
     fun setEmvApps() = viewModelScope.launch(Dispatchers.Default) {
         writeMessage("setEmvApps")
         val emvApps: List<EmvApp> = app.loadJsonFromAsset("emv-app.json")
@@ -97,7 +97,7 @@ class ExampleViewModel(private val app: Application) : AndroidViewModel(app) {
     }
 
     // CAPKs
-    // https://docs.minesec.tools/tech-sdk/getting-started/quickstart#capk-param
+    // https://docs.theminesec.com/tech-sdk/getting-started/quickstart#capk-param
     fun setCapks() = viewModelScope.launch(Dispatchers.Default) {
         writeMessage("setCapks")
         val capks: List<Capk> = app.loadJsonFromAsset("capk.json")
@@ -122,7 +122,7 @@ class ExampleViewModel(private val app: Application) : AndroidViewModel(app) {
     }
 
     // Terminal Param
-    // https://docs.minesec.tools/tech-sdk/getting-started/quickstart#terminal-device-param
+    // https://docs.theminesec.com/tech-sdk/getting-started/quickstart#terminal-device-param
     fun setTermParam() = viewModelScope.launch(Dispatchers.Default) {
         writeMessage("setTermParam")
 
@@ -146,7 +146,7 @@ class ExampleViewModel(private val app: Application) : AndroidViewModel(app) {
     }
 
     // Key ceremony
-    // https://docs.minesec.tools/tech-sdk/getting-started/quickstart#key-ceremony
+    // https://docs.theminesec.com/tech-sdk/getting-started/quickstart#key-ceremony
     // !!!!!!! DEMO ONLY !!!!!!!
     // AES 128 BDK
     // DO NOT do it in any production environment
@@ -242,7 +242,7 @@ class ExampleViewModel(private val app: Application) : AndroidViewModel(app) {
     }
 
     // Card Read & PIN
-    // https://docs.minesec.tools/tech-sdk/getting-started/quickstart#request-contactless-card-read
+    // https://docs.theminesec.com/tech-sdk/getting-started/quickstart#request-contactless-card-read
     private val _cardReadResult: MutableStateFlow<Triple<Ksn, Iv, Encrypted57>?> = MutableStateFlow(null)
     val cardReadResult = _cardReadResult.asStateFlow()
     fun setCardReadResult(result: Triple<Ksn, Iv, Encrypted57>?) = viewModelScope.launch {
@@ -277,7 +277,7 @@ class ExampleViewModel(private val app: Application) : AndroidViewModel(app) {
 
     // DEMO PURPOSE ONLY
     // Data decrypt
-    // https://docs.minesec.tools/tech-sdk/getting-started/quickstart#decrypt-data
+    // https://docs.theminesec.com/tech-sdk/getting-started/quickstart#decrypt-data
     fun dangerouslyDecryptCardDataLocally() {
         writeMessage("card read result: ${cardReadResult.value.toString()}")
         cardReadResult.value?.let { (ksn, iv, encrypted) ->

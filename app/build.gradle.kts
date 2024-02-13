@@ -80,7 +80,6 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
-
     // view model for demo
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     // camera permission compose
