@@ -9,16 +9,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 
-val Purple = Color(0xffB971FF)
-val Grey = Color(0xff2B3E64)
-val DarkGrey = Color(0xff101A2D)
+val ShamrockGreen = Color(0xff2BD659)
+val SlateGray = Color(0xff64748b)
+val CatalinaBlue = Color(0xff101A2D)
 
 @Composable
-fun MsExampleSdkSoftPOSTheme(content: @Composable () -> Unit) {
+fun MsExampleTheme(content: @Composable () -> Unit) {
     val colorScheme = darkColorScheme(
-        primary = Purple,
-        secondary = Grey,
-        background = DarkGrey,
+        primary = ShamrockGreen,
+        onPrimary = CatalinaBlue,
+        secondary = SlateGray,
+        background = CatalinaBlue,
         onBackground = Color.White
     )
     val view = LocalView.current

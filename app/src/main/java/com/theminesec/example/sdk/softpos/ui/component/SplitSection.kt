@@ -16,7 +16,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.theminesec.example.sdk.softpos.R
 
 @Composable
 fun SplitSection(
@@ -44,7 +46,7 @@ fun SplitSection(
                 .verticalScroll(rememberScrollState()),
         ) {
             Spacer(modifier = Modifier.height(16.dp))
-            Text(text = "MineSec Example\nSoftPOS", style = MaterialTheme.typography.headlineMedium)
+            Text(text = stringResource(id = R.string.app_name), style = MaterialTheme.typography.headlineMedium)
             Spacer(modifier = Modifier.height(16.dp))
             upperContent()
             Spacer(modifier = Modifier.height(16.dp))

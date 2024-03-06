@@ -22,13 +22,13 @@ import com.theminesec.example.sdk.softpos.ui.ExampleSection
 import com.theminesec.example.sdk.softpos.ui.ExampleViewModel
 import com.theminesec.example.sdk.softpos.ui.component.ObjectDisplay
 import com.theminesec.example.sdk.softpos.ui.component.SplitSection
-import com.theminesec.example.sdk.softpos.ui.theme.MsExampleSdkSoftPOSTheme
+import com.theminesec.example.sdk.softpos.ui.theme.MsExampleTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MsExampleSdkSoftPOSTheme {
+            MsExampleTheme {
                 val viewModel = viewModel(modelClass = ExampleViewModel::class.java)
                 val messages by viewModel.messages.collectAsState()
                 val lazyListState = rememberLazyListState()
