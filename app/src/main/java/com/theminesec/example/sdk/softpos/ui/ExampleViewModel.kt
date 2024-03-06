@@ -11,6 +11,7 @@ import com.theminesec.MineHades.KMS.MsKeyProperties
 import com.theminesec.MineHades.KMS.MsWrappedSecretKeyEntry
 import com.theminesec.example.sdk.softpos.converter.*
 import com.theminesec.example.sdk.softpos.util.crypto.*
+import com.theminesec.example.sdk.softpos.util.crypto.PemUtil.stripPemHeader
 import com.theminesec.example.sdk.softpos.util.isAllZero
 import com.theminesec.example.sdk.softpos.util.loadJsonFromAsset
 import com.theminesec.example.sdk.softpos.util.sequentialString
@@ -185,17 +186,20 @@ class ExampleViewModel(private val app: Application) : AndroidViewModel(app) {
         // - Simple RSA
         // - RSA OAEP
         // - TR31, check doc for more details
-        val publicStr = KeyLoader.ReadKeyfromKeyStore(mineSecPubName).wrappedKey.decodeToString()
-        val kekPublic = RSAUtils.getPublicKeyFromPEM(publicStr)
+        val kekPublic = KeyLoader
+            .ReadKeyfromKeyStore(mineSecPubName)
+            .wrappedKey
+            .decodeToString()
+            .stripPemHeader()
 
         val dangerouslyLocalWrapEntry = when (wrappingMethod) {
-            WrappingMethod.RSA -> RSAUtils.simpleCrypt(
+            WrappingMethod.RSA -> RsaUtil.simpleCrypt(
                 mode = Cipher.ENCRYPT_MODE,
                 key = kekPublic,
                 data = dangerouslyLocalIk
             )
 
-            WrappingMethod.RSA_OAEP_SHA256 -> RSAUtils.oaepMgf1Sha256Crypt(
+            WrappingMethod.RSA_OAEP_SHA256 -> RsaUtil.oaepMgf1Sha256Crypt(
                 mode = Cipher.ENCRYPT_MODE,
                 key = kekPublic,
                 data = dangerouslyLocalIk
@@ -239,6 +243,26 @@ class ExampleViewModel(private val app: Application) : AndroidViewModel(app) {
         )
         val injectResp = sdk.payInterface.CryptoInjectKey(wrappedKeyEntryPin)
         writeMessage("PIN key injectResp, code: ${injectResp.errorcode}, msg: ${injectResp.errorMsg}")
+    }
+
+    fun injectPanHmacKey() = viewModelScope.launch(Dispatchers.Default) {
+        // should do it in your backend
+        val minesecPublicLocally = KeyLoader
+            .ReadKeyfromKeyStore("minesecpk")
+            .wrappedKey
+            .decodeToString()
+            .stripPemHeader()
+
+        val dangerouslyHmacKey = "superDuperSecret"
+        // do happen in your backend
+        val dangerouslyLocalWrapHmacKey = RsaUtil.simpleCrypt(
+            mode = Cipher.ENCRYPT_MODE,
+            key = minesecPublicLocally,
+            data = dangerouslyHmacKey.toByteArray()
+        )
+
+        val injectResp = MhdCPOC.getInstance().payInterface.injectHashMacKey(dangerouslyLocalWrapHmacKey)
+        writeMessage("Pan Hmac key injectResp, code: ${injectResp.errorcode}, msg: ${injectResp.errorMsg}")
     }
 
     // Card Read & PIN
@@ -290,10 +314,10 @@ class ExampleViewModel(private val app: Application) : AndroidViewModel(app) {
                 ksn = ksn.value
             )
             try {
-                val plainTrack2 = Aes.decrypt(
+                val plainTrack2 = AesUtil.decrypt(
                     encrypted.value.hexToByteArray(),
                     dangerouslyDemoWorkingCardKey,
-                    Aes.Padding.PKCS5Padding,
+                    AesUtil.Padding.PKCS5Padding,
                     iv.value.hexToByteArray()
                 )
                 val plainPan = plainTrack2.toHexString().lowercase().substringBefore("d")
@@ -325,7 +349,7 @@ class ExampleViewModel(private val app: Application) : AndroidViewModel(app) {
             try {
                 writeMessage("$ksn, $epb, $panToken")
                 panToken?.let {
-                    val plainPin = PinBlock.dangerouslyDecryptIso4EpbToPin(
+                    val plainPin = PinBlockUtil.dangerouslyDecryptIso4EpbToPin(
                         dangerouslyDemoWorkingPinKey,
                         epb.value.hexToByteArray(),
                         encryptedPinData.value?.third?.value!!

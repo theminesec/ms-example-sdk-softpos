@@ -1,6 +1,6 @@
 package com.theminesec.example.sdk.softpos.util.crypto
 
-import com.theminesec.example.sdk.softpos.util.crypto.Aes.Padding
+import com.theminesec.example.sdk.softpos.util.crypto.AesUtil.Padding
 
 /**
  * ANSI X9.24-3-2017
@@ -59,7 +59,7 @@ class DukptAesHost {
                 val tmp = derivationData.copyOf().apply {
                     set(1, i.toByte())
                 }
-                result += Aes.encryptEcb(tmp, derivationKey, Padding.NoPadding)
+                result += AesUtil.encryptEcb(tmp, derivationKey, Padding.NoPadding)
             }
             return result.copyOfRange(0, length / 8)
         }

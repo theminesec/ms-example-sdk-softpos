@@ -133,6 +133,14 @@ fun ExampleSection() {
                 onClick = { viewModel.injectPinInitialKey() }
             )
         }
+        Text(text = "Inject PAN HMAC key")
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            BrandedButton(
+                modifier = Modifier.weight(1f),
+                label = "Inject PAN HMAC key",
+                onClick = { viewModel.injectPanHmacKey() }
+            )
+        }
         Divider()
 
         // Card read

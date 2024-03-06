@@ -13,7 +13,7 @@ import org.junit.Test
  * See [testing documentation](http://d.android.com/tools/testing).
  */
 @OptIn(ExperimentalStdlibApi::class)
-class DukptAesHostUnitTest {
+class DukptAesHostUnitTestUtil {
     @Test
     fun `test derive initial key from bdk with aes 128, 192, 256`() {
         val bdk128 = "f1".repeat(16).hexToByteArray()

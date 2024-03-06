@@ -6,7 +6,7 @@ import javax.crypto.spec.SecretKeySpec
 import kotlin.experimental.xor
 
 @OptIn(ExperimentalStdlibApi::class)
-object PinBlock {
+object PinBlockUtil {
 
     /**
      * reference: https://www.eftlab.com/knowledge-base/complete-list-of-pin-blocks
@@ -112,11 +112,11 @@ object PinBlock {
 
             return pinBytes
                 // 3. PIN block is encrypted with AES key - Format 4 uses AES-128 ECB
-                .run { Aes.encryptEcb(this, pinKey, Aes.Padding.NoPadding) }
+                .run { AesUtil.encryptEcb(this, pinKey, AesUtil.Padding.NoPadding) }
                 // 4. The resulting Intermediate Block A is then XOR’ed with PAN Block
                 .mapIndexed { idx, byte -> byte xor panBytes!![idx] }.toByteArray()
                 // 5. The resulting Intermediate Block B is enciphered with the AES key again to get final Enciphered PIN Block
-                .run { Aes.encryptEcb(this, pinKey, Aes.Padding.NoPadding).toHexString() }
+                .run { AesUtil.encryptEcb(this, pinKey, AesUtil.Padding.NoPadding).toHexString() }
         }
 
         // PinBlockFormat.Iso1, PinBlockFormat.Iso2

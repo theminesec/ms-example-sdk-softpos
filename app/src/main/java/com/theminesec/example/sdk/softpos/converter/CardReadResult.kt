@@ -23,6 +23,7 @@ sealed class CardReadResult {
         val cvmPerformed: CvmPerformed? = null,
         val pinKsn: String? = null,
         val panToken: String? = null,
+        val cardHashValue: String? = null,
         val emvData: Map<String, String> = mapOf(),
     ) : CardReadResult()
 }
@@ -54,6 +55,7 @@ fun MhdEmvTransResult.toCardReadResult(): CardReadResult {
             cardKsn = cardKeyId,
             pinKsn = pinKeyId,
             panToken = pinBlockPan,
+            cardHashValue = cardHashValue,
             emvData = kernelInfoData.mapValues { (_, byteArray) ->
                 byteArray.toHexString()
             }

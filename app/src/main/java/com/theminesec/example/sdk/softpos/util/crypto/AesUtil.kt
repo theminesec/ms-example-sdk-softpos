@@ -5,7 +5,7 @@ import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
-object Aes {
+object AesUtil {
     private const val TAG = "AES"
 
     enum class Padding {
