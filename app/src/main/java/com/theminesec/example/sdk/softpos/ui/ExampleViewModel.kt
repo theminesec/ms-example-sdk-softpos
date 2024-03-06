@@ -54,7 +54,7 @@ class ExampleViewModel(private val app: Application) : AndroidViewModel(app) {
 
     // Init SDK
     // https://docs.theminesec.com/tech-sdk/getting-started/quickstart#init-sdk
-    private val sdk = MhdCPOC.getInstance(app)
+    private val sdk = MhdCPOC.getInstance()
 
     init {
         initSdk()

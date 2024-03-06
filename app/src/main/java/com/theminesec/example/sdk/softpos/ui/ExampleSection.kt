@@ -52,7 +52,7 @@ fun ExampleSection() {
     val uiPinData by viewModel.encryptedPinData.collectAsState()
 
     // hold reference of sdk singleton
-    val sdk = remember { MhdCPOC.getInstance(localContext) }
+    val sdk = remember { MhdCPOC.getInstance() }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
