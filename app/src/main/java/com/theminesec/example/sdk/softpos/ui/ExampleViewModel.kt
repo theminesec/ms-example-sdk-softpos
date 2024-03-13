@@ -78,7 +78,7 @@ class ExampleViewModel(private val app: Application) : AndroidViewModel(app) {
     // https://docs.theminesec.com/tech-sdk/getting-started/quickstart#emv-kernel-app-param
     fun setEmvApps() = viewModelScope.launch(Dispatchers.Default) {
         writeMessage("setEmvApps")
-        val emvApps: List<EmvApp> = app.loadJsonFromAsset("emv-app.json")
+        val emvApps: List<EmvParam> = app.loadJsonFromAsset("emv-app.json")
         emvApps.forEach { emvApp ->
             val result = sdk.MhdEmv_AddApp(emvApp.toMhdEmvApp())
             writeMessage("EMV AID ${emvApp.aid}\nsuccess?: ${result == MhdReturnCode.MHD_SUCCESS}")

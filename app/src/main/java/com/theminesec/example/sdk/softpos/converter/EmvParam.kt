@@ -4,9 +4,9 @@ import com.theminesec.MineHades.EMV_APPLIST
 import com.theminesec.example.sdk.softpos.util.prependLengthByte
 import com.theminesec.example.sdk.softpos.util.trimLengthByte
 
-data class EmvApp(
+data class EmvParam(
     /**
-     * 9F06 - AID
+     * 9F06 - Application ID
      */
     val aid: String,
 
@@ -20,8 +20,8 @@ data class EmvApp(
     val tacDenial: String,
     val tacOnline: String,
     val tacDefault: String,
+
     /**
-     *
      * DDOL to be used for constructing the internal authenticate command if the DDOL in the card is not present
      */
     val defaultDdol: String,
@@ -37,21 +37,24 @@ data class EmvApp(
      * 0: Exact match
      * 1: Partial match
      */
-    val isFullMatchSelect: Boolean,
+    val fullMatchSelect: Boolean,
     val selectionPriority: Int,
 
     // random selection
     val enabledRandomSelect: Boolean,
+
     /**
      * Random selection target percentage
      */
     val randomSelectTargetPercent: Int,
+
     /**
      * Maximum target percentage to be used for Biased Random Selection
      * in the range of 0 to 99
      * This is the desired percentage of transactions just below the floor limit
      */
     val randomSelectMaxTargetPercent: Int,
+
     /**
      * Threshold Value for Biased Random Selection (which must be zero or a positive number less than the floor limit)
      */
@@ -65,16 +68,19 @@ data class EmvApp(
     val enabledVelocityCheck: Boolean,
 
     val enabledFloorLimitCheck: Boolean,
+
     /**
      * 9F1B - Terminal contactless floor limit
      * N12
      */
     val ctlFloorLimit: String,
+
     /**
      * Indicates the amount above which a contactless transaction is not allowed
      * the cardholder should be directed to use the contact chip instead.
      */
     val ctlTranLimit: String,
+
     /**
      * Indicates the amount above which a CVM is required for contactless transactions.
      */
@@ -87,11 +93,24 @@ data class EmvApp(
      * The scope of this tag is limited to Entry Point. Kernels may use this tag for different purposes.
      */
     val ttq: String? = null,
+
     /**
      * 9F1D Terminal risk management data
      * Applicable: Mastercard
      */
     val riskMgmtData: String? = null,
+
+    /**
+     * MC Kernel C-2 DF811B
+     * A.1.87 Kernel Configuration
+     * b8 Mag-stripe mode contactless transactions not supported(1)
+     * b7 EMV mode contactless transactions not supported(1)
+     * b6 On device cardholder verification supported
+     * b5 Relay resistance protocol supported
+     * b4 Reserved for Payment system
+     * b3 Read all records even when no CDA
+     * b2-1 Each bit RFU
+     */
     val mcKernelConfig: String? = null,
 
     /**
@@ -101,7 +120,7 @@ data class EmvApp(
 )
 
 @OptIn(ExperimentalStdlibApi::class)
-fun EmvApp.toMhdEmvApp() = EMV_APPLIST().apply {
+fun EmvParam.toMhdEmvApp() = EMV_APPLIST().apply {
     aid = this@toMhdEmvApp.aid.hexToByteArray()
     aidLen = this@toMhdEmvApp.aid.hexToByteArray().size.toByte()
     version = this@toMhdEmvApp.appVersion.hexToByteArray()
@@ -113,7 +132,7 @@ fun EmvApp.toMhdEmvApp() = EMV_APPLIST().apply {
     tacDefault = this@toMhdEmvApp.tacDefault.hexToByteArray()
     tacOnline = this@toMhdEmvApp.tacOnline.hexToByteArray()
 
-    selFlag = if (isFullMatchSelect) 1 else 0
+    selFlag = if (fullMatchSelect) 1 else 0
     priority = selectionPriority.toByte()
 
     randTransSel = if (enabledRandomSelect) 1 else 0
@@ -136,7 +155,7 @@ fun EmvApp.toMhdEmvApp() = EMV_APPLIST().apply {
 }
 
 @OptIn(ExperimentalStdlibApi::class)
-fun EMV_APPLIST.toEmvApp() = EmvApp(
+fun EMV_APPLIST.toEmvApp() = EmvParam(
     aid = aid.toHexString(),
     appVersion = version.toHexString(),
 
@@ -146,7 +165,7 @@ fun EMV_APPLIST.toEmvApp() = EmvApp(
     tacOnline = tacOnline.toHexString(),
     tacDefault = tacDefault.toHexString(),
 
-    isFullMatchSelect = selFlag == 1.toByte(),
+    fullMatchSelect = selFlag == 1.toByte(),
     selectionPriority = priority.toInt(),
 
     enabledRandomSelect = randTransSel == 1.toByte(),

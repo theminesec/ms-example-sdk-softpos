@@ -41,7 +41,8 @@
     "selectionPriority": 0,
     "tacDefault": "FC50808800",
     "tacDenial": "0000000000",
-    "tacOnline": "FC50808800"
+    "tacOnline": "FC50808800",
+    "mcKernelConfig": "b0"
   },
   {
     "aid": "A000000333",

@@ -3,7 +3,7 @@
   "ctlReaderCapability": "c3",
   "ctlReaderCapabilityAmex": "18e00003",
   "merchantCategoryCode": "5999",
-  "terminalCapability": "0060c8",
+  "terminalCapability": "0020c8",
   "terminalType": "21",
   "tranCurrCode": "0840"
 }
