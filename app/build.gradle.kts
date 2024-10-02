@@ -87,11 +87,11 @@ dependencies {
     // gson for demo
     implementation("com.google.code.gson:gson:2.10.1")
 
-    debugImplementation("com.theminesec.sdk:minehades-stage:1.10.105.13-beta01") {
+    debugImplementation("com.theminesec.sdk:minehades-stage-raw:1.10.105.12.28-SNAPSHOT") {
         exclude(group = "org.bouncycastle", module = "bcprov-jdk15on")
         exclude(group = "org.bouncycastle", module = "bcpkix-jdk15on")
     }
-    releaseImplementation("com.theminesec.sdk:minehades:1.10.105.13-beta01") {
+    releaseImplementation("com.theminesec.sdk:minehades:1.10.105.12.26") {
         exclude(group = "org.bouncycastle", module = "bcprov-jdk15on")
         exclude(group = "org.bouncycastle", module = "bcpkix-jdk15on")
     }

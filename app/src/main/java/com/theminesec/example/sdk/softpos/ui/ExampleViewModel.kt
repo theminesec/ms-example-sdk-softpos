@@ -253,15 +253,16 @@ class ExampleViewModel(private val app: Application) : AndroidViewModel(app) {
             .decodeToString()
             .stripPemHeader()
 
-        val dangerouslyHmacKey = "superDuperSecret"
+        val dangerouslyHmacKey = "superDuperSecret".toByteArray()
+
         // do happen in your backend
         val dangerouslyLocalWrapHmacKey = RsaUtil.simpleCrypt(
             mode = Cipher.ENCRYPT_MODE,
             key = minesecPublicLocally,
-            data = dangerouslyHmacKey.toByteArray()
+            data = dangerouslyHmacKey
         )
 
-        val injectResp = MhdCPOC.getInstance().payInterface.injectHashMacKey(dangerouslyLocalWrapHmacKey)
+        val injectResp = sdk.payInterface.injectHashMacKey(dangerouslyLocalWrapHmacKey)
         writeMessage("Pan Hmac key injectResp, code: ${injectResp.errorcode}, msg: ${injectResp.errorMsg}")
     }
 
